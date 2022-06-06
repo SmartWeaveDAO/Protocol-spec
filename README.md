@@ -108,3 +108,13 @@ transaction block height (i.e. when the transaction was mined in the chain) and 
 The full ordering is `[ block_height, sha256(transactionId + blockHash) ]`.
 3. Applies the sorted interactions onto the contract's `handler` function - evaluating contract's state
    up to the requested block height.
+
+### Evolve
+Evolving contract is a way of updating contract source. In order to properly evolve the contract following steps need to be reproduced:
+1. `canEvolve` property set to `true` CAN be added to the initial state, if not set - defaults to `true`, only explicit `false` does not let contract to be evolved.
+2. `evolve` interaction MUST be added to the original contract source, it MUST set the `evolve` property in the state to `action.input.value` - new contract source transaction id. 
+3. `evolve` interaction CAN be conditioned to the owner of the contract.
+4. New contract source MUST be posted as transaction on Arweave (same data field and tag rules apply as to the original contract source).
+5. `evolve` interaction MUST be called with the evolved contract source id indicated as the input `value`.
+
+Evolved contract source is then referred instead of the original contract source when performing any interactions. The state is evaluated based on all contract sources linked to the contract. There is no limitation for number of evolved contract sources associated to one contract.
