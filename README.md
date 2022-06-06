@@ -117,7 +117,7 @@ Evolving contract is a way of updating contract source. In order to properly evo
 
 1. `canEvolve` property set to `true` MUST be added to the initial state.
 2. `evolve` interaction MUST be added to the original contract source, it MUST set the `evolve` property in the state to `action.input.value` - new contract source transaction id.
-3. `evolve` interaction MUST be conditioned to the owner of the contract.
+3. `evolve` interaction CAN be conditioned to the owner of the contract.
 4. New contract source MUST be posted as transaction on Arweave (same data field and tag rules apply as to the original contract source), an example of such:
 
 ```js
@@ -130,10 +130,10 @@ Evolving contract is a way of updating contract source. In order to properly evo
     await arweave.transactions.post(tx);`
 ```
 
-5. `evolve` interaction MUST be called with the evolved contract source id indicated as the input `value`, an example of correct interaction:
+5. `evolve` interaction MUST be called with the evolved contract source id indicated as the input `value` (id of the transaction from p. 4), an example of correct interaction:
 
 ```js
-   await contract.writeInteraction({ function: 'evolve', value: 'OFh9ImnAauPjW49IHzaVq7hI-S0yswV0Nh7bTUQxdtc });
+   { function: 'evolve', value: 'OFh9ImnAauPjW49IHzaVq7hI-S0yswV0Nh7bTUQxdtc };
 ```
 
-Evolved contract source is then referred instead of the original contract source when performing any interactions. The state is evaluated based on all contract sources linked to the contract. There is no limitation for number of evolved contract sources associated to one contract.
+Evolved contract source is then referred instead of the original contract source when performing any interactions after the "evolve" interaction. The state is evaluated based on all contract sources linked to the contract. There is no limitation for number of evolved contract sources associated to one contract.
