@@ -97,14 +97,43 @@ contractFunction = (state, action) => state;
 
 This function takes a state and an action as input arguments - and produces a new state as a result.
 In functional programming terms it acts as a `fold` function - the state of the contract is derived from:
+
 1. An initial state
 2. A contract function
 3. An ordered list of actions
 
 In order to evaluate contract state, SmartWeave Protocol client:
+
 1. Loads all the contract's interaction transactions up to the requested block height.
-2. Sorts the interaction transactions. The order of the interactions is determined firstly by interaction 
-transaction block height (i.e. when the transaction was mined in the chain) and secondly by `sha256(transactionId + blockHash)`.
-The full ordering is `[ block_height, sha256(transactionId + blockHash) ]`.
+2. Sorts the interaction transactions. The order of the interactions is determined firstly by interaction
+   transaction block height (i.e. when the transaction was mined in the chain) and secondly by `sha256(transactionId + blockHash)`.
+   The full ordering is `[ block_height, sha256(transactionId + blockHash) ]`.
 3. Applies the sorted interactions onto the contract's `handler` function - evaluating contract's state
    up to the requested block height.
+
+### Evolve
+
+Evolving contract is a way of updating contract source. In order to properly evolve the contract following steps need to be reproduced:
+
+1. `canEvolve` property set to `true` MUST be added to the initial state (defaults to `false`, cannot evolve without setting it explicitly).
+2. `evolve` function MUST be added to the original contract source, it MUST set the `evolve` property in the state to `action.input.value` - new contract source transaction id.
+3. `evolve` interaction CAN be conditioned to the owner of the contract.
+4. New contract source MUST be posted as transaction on Arweave (same data field and tag rules apply as to the original contract source), an example of such:
+
+```js
+    const tx = await arweave.createTransaction({ data: newContractSource }, wallet);
+    tx.addTag(SmartWeaveTags.APP_NAME, 'SmartWeaveContractSource');
+    tx.addTag(SmartWeaveTags.APP_VERSION, '0.3.0');
+    tx.addTag('Content-Type', 'application/javascript');
+
+    await arweave.transactions.sign(tx, wallet);
+    await arweave.transactions.post(tx);`
+```
+
+5. `evolve` interaction MUST be called with the evolved contract source id indicated as the input `value` (id of the transaction from p. 4), an example of correct interaction:
+
+```js
+   { function: 'evolve', value: 'OFh9ImnAauPjW49IHzaVq7hI-S0yswV0Nh7bTUQxdtc };
+```
+
+Evolved contract source is then referred instead of the original contract source when performing any interactions after the "evolve" interaction. The state is evaluated based on all contract sources linked to the contract. There is no limitation for number of evolved contract sources associated to one contract.
