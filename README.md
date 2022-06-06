@@ -115,7 +115,7 @@ In order to evaluate contract state, SmartWeave Protocol client:
 
 Evolving contract is a way of updating contract source. In order to properly evolve the contract following steps need to be reproduced:
 
-1. `canEvolve` property set to `true` MUST be added to the initial state.
+1. `canEvolve` property set to `true` MUST be added to the initial state (defaults to `false`, cannot evolve without setting it explicitly).
 2. `evolve` interaction MUST be added to the original contract source, it MUST set the `evolve` property in the state to `action.input.value` - new contract source transaction id.
 3. `evolve` interaction CAN be conditioned to the owner of the contract.
 4. New contract source MUST be posted as transaction on Arweave (same data field and tag rules apply as to the original contract source), an example of such:
